@@ -5,7 +5,6 @@ authors = ["Martin Pool <mbp@google.com>"]
 edition = "2018"
 description = "Decode Unix file mode bits (even on non-Unix platforms)"
 license = "Apache-2.0"
-publish = false
 repository = "https://github.com/sourcefrog/unix_mode"
 
 [dependencies]
