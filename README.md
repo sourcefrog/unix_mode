@@ -1,5 +1,8 @@
 # unix\_mode Rust library
 
+[![crates.io](https://img.shields.io/crates/v/unix_mode.svg)](https://crates.io/crates/unix_mode)
+[![docs.rs](https://docs.rs/unix_mode/badge.svg)](https://docs.rs/unix_mode)
+
 This library provides functions to decode and print Unix mode bits /
 permissions, even on non-Unix platforms.
 
@@ -12,7 +15,9 @@ Apache-2.0.
 
 ## Contributing
 
-I'd love to accept patches to this project. Please read the
+Patches are very welcome.
+
+Please read the
 [contribution guidelines](CONTRIBUTING.md) and
 [code of conduct](CODE_OF_CONDUCT.md).
 
