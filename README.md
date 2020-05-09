@@ -10,6 +10,8 @@ permissions, even on non-Unix platforms.
 On Unix, decoding is supported by `std::os::unix::fs` in the standard library,
 but this crate adds a function to print them in the format used by `ls -l`.
 
+For API documentation see <https://docs.rs/unix_mode>.
+
 ## License
 
 Apache-2.0.
