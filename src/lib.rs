@@ -19,7 +19,12 @@
 //! that describe both the type of the file and its permissions.
 //!
 //! These are classically displayed in the left of `ls` output, and the permissions
-//! can be changed with `chmod`.
+//! can be changed with `chmod`. For example:
+//!
+//! ```
+//! assert_eq!(unix_mode::to_string(0o0040755), "drwxr-xr-x");
+//! assert_eq!(unix_mode::to_string(0o0100640), "-rw-r-----");
+//! ```
 //!
 //! The encoding is fairly standard across unices, and occurs in some file
 //! formats and network protocols that might be seen on non-Unix platforms.
