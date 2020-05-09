@@ -184,8 +184,9 @@ pub fn to_string(mode: u32) -> String {
     s
 }
 
+#[cfg(unix)]
 #[cfg(test)]
-mod test {
+mod unix_tests {
     use super::*;
     use std::os::unix::fs::MetadataExt;
 
@@ -194,7 +195,6 @@ mod test {
     }
 
     /// Test predicates against files likely to already exist on a Unix system.
-    #[cfg(unix)]
     #[test]
     fn stat_existing_files() {
         assert!(is_dir(file_mode("/")));
