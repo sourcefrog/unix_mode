@@ -4,7 +4,8 @@ on: [push, pull_request]
 
 jobs:
   build:
-
+    env:
+      RUST_BACKTRACE: 1
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -16,3 +17,5 @@ jobs:
       run: cargo build --verbose
     - name: Run tests
       run: cargo test --verbose
+
+# vim: sw=2 et
