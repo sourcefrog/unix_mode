@@ -2,6 +2,7 @@
 
 [![crates.io](https://img.shields.io/crates/v/unix_mode.svg)](https://crates.io/crates/unix_mode)
 [![docs.rs](https://docs.rs/unix_mode/badge.svg)](https://docs.rs/unix_mode)
+[![Tests](https://github.com/sourcefrog/unix_mode/workflows/rust/badge.svg?branch=stable)](https://github.com/sourcefrog/unix_mode/actions?query=workflow%3Arust)
 
 This library provides functions to decode and print Unix mode bits /
 permissions, even on non-Unix platforms.
