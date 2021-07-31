@@ -93,6 +93,21 @@ pub fn is_socket(mode: u32) -> bool {
     type_bits(mode) == 0o014
 }
 
+/// Returns true if the set-user-ID bit is set
+pub fn has_setuid(mode: u32) -> bool {
+    mode & 0o4000 != 0
+}
+
+/// Returns true if the set-group-ID bit is set
+pub fn has_setgid(mode: u32) -> bool {
+    mode & 0o2000 != 0
+}
+
+/// Returns true if the sticky bit is set
+pub fn has_sticky(mode: u32) -> bool {
+    mode & 0o1000 != 0
+}
+
 /// Convert Unix mode bits to a text string describing type and permissions,
 /// as shown in `ls`.
 ///
@@ -140,9 +155,9 @@ pub fn to_string(mode: u32) -> String {
         0o016 => 'w', // whiteout
         _ => '?',     // unknown
     });
-    let setuid = bitset(mode, 0o4000);
-    let setgid = bitset(mode, 0o2000);
-    let sticky = bitset(mode, 0o1000);
+    let setuid = is_setuid(mode);
+    let setgid = is_setgid(mode);
+    let sticky = is_sticky(mode);
     s.push(permch(mode, 0o400, 'r'));
     s.push(permch(mode, 0o200, 'w'));
     let usrx = bitset(mode, 0o100);
@@ -201,6 +216,7 @@ mod unix_tests {
         assert!(!is_file(file_mode("/")));
         assert!(is_file(file_mode("/etc/passwd")));
         assert!(is_char_device(file_mode("/dev/null")));
+        assert!(is_sticky(file_mode("/tmp/")));
 
         // I don't know how to reliably find a block device across OSes, and
         // we can't make one (without root.)
