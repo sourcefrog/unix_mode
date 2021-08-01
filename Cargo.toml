@@ -1,6 +1,6 @@
 [package]
 name = "unix_mode"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Martin Pool <mbp@google.com>"]
 edition = "2018"
 description = "Decode Unix file mode bits (even on non-Unix platforms)"
