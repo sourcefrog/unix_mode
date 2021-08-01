@@ -203,10 +203,17 @@ pub fn to_string(mode: u32) -> String {
 #[cfg(test)]
 mod unix_tests {
     use super::*;
+    use nix::sys::stat;
+    use nix::unistd;
     use std::os::unix::fs::MetadataExt;
+    use std::os::unix::net::UnixListener;
+    use std::path::Path;
+    use tempfile::tempdir;
 
-    fn file_mode(s: &str) -> u32 {
-        std::fs::metadata(s).unwrap().mode()
+    fn file_mode<S: AsRef<Path>>(s: S) -> u32 {
+        let mode = std::fs::symlink_metadata(s.as_ref()).unwrap().mode();
+        println!("Mode of {:?} is 0o{:07o}", s.as_ref(), mode);
+        mode
     }
 
     /// Test predicates against files likely to already exist on a Unix system.
@@ -220,7 +227,29 @@ mod unix_tests {
 
         // I don't know how to reliably find a block device across OSes, and
         // we can't make one (without root.)
+    }
 
-        // TODO: Make a fifo, socket, etc, and stat them.
+    #[test]
+    fn stat_created_symlink() {
+        let tmp_dir = tempdir().unwrap();
+        let link_path = tmp_dir.path().join("sym");
+        unistd::symlinkat(".", None, &link_path).unwrap();
+        assert!(is_symlink(file_mode(link_path)));
+    }
+
+    #[test]
+    fn stat_created_fifo() {
+        let tmp_dir = tempdir().unwrap();
+        let fifo_path = tmp_dir.path().join("fifo");
+        unistd::mkfifo(&fifo_path, stat::Mode::S_IRWXU).unwrap();
+        assert!(is_fifo(file_mode(fifo_path)));
+    }
+
+    #[test]
+    fn stat_created_socket() {
+        let tmp_dir = tempdir().unwrap();
+        let sock_path = tmp_dir.path().join("sock");
+        let _ = UnixListener::bind(&sock_path).unwrap();
+        assert!(is_socket(file_mode(sock_path)));
     }
 }

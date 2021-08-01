@@ -8,3 +8,7 @@ license = "Apache-2.0"
 repository = "https://github.com/sourcefrog/unix_mode"
 
 [dependencies]
+
+[target.'cfg(unix)'.dev-dependencies]
+tempfile = "3.2"
+nix = "0.22"
