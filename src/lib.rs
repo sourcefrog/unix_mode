@@ -94,17 +94,17 @@ pub fn is_socket(mode: u32) -> bool {
 }
 
 /// Returns true if the set-user-ID bit is set
-pub fn has_setuid(mode: u32) -> bool {
+pub fn is_setuid(mode: u32) -> bool {
     mode & 0o4000 != 0
 }
 
 /// Returns true if the set-group-ID bit is set
-pub fn has_setgid(mode: u32) -> bool {
+pub fn is_setgid(mode: u32) -> bool {
     mode & 0o2000 != 0
 }
 
 /// Returns true if the sticky bit is set
-pub fn has_sticky(mode: u32) -> bool {
+pub fn is_sticky(mode: u32) -> bool {
     mode & 0o1000 != 0
 }
 
