@@ -43,6 +43,58 @@ fn type_bits(mode: u32) -> u32 {
     (mode >> 12) & 0o17
 }
 
+/// The different types of files known to this library
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum Type {
+    File,
+    Dir,
+    Symlink,
+    Socket,
+    Fifo,
+    BlockDevice,
+    CharDevice,
+    /// Removed file in union filesystems
+    Whiteout,
+    Unknown,
+}
+
+impl Type {
+    /// Parse type from mode
+    ///
+    /// ```
+    /// assert_eq!(unix_mode::Type::from(0o0100640), unix_mode::Type::File);
+    /// ```
+    pub fn from(mode: u32) -> Type {
+        use Type::*;
+        match type_bits(mode) {
+            0o001 => Fifo,
+            0o002 => CharDevice,
+            0o004 => Dir,
+            0o006 => BlockDevice,
+            0o010 => File,
+            0o012 => Symlink,
+            0o014 => Socket,
+            0o016 => Whiteout,
+            _ => Unknown,
+        }
+    }
+
+    fn short(self) -> char {
+        use Type::*;
+        match self {
+            Fifo => 'p',
+            CharDevice => 'c',
+            Dir => 'd',
+            BlockDevice => 'b',
+            File => '-',
+            Symlink => 'l',
+            Socket => 's',
+            Whiteout => 'w',
+            Unknown => '?',
+        }
+    }
+}
+
 /// Returns true if this mode represents a regular file.
 ///
 /// ```
@@ -50,7 +102,7 @@ fn type_bits(mode: u32) -> u32 {
 /// assert_eq!(unix_mode::is_file(0o0100640), true);
 /// ```
 pub fn is_file(mode: u32) -> bool {
-    type_bits(mode) == 0o010
+    Type::from(mode) == Type::File
 }
 
 /// Returns true if this mode represents a directory.
@@ -60,7 +112,7 @@ pub fn is_file(mode: u32) -> bool {
 /// assert_eq!(unix_mode::is_dir(0o0100640), false);
 /// ```
 pub fn is_dir(mode: u32) -> bool {
-    type_bits(mode) == 0o004
+    Type::from(mode) == Type::Dir
 }
 
 /// Returns true if this mode represents a symlink.
@@ -70,27 +122,27 @@ pub fn is_dir(mode: u32) -> bool {
 /// assert_eq!(unix_mode::is_symlink(0o0120755), true);
 /// ```
 pub fn is_symlink(mode: u32) -> bool {
-    type_bits(mode) == 0o012
+    Type::from(mode) == Type::Symlink
 }
 
 /// Returns true if this mode represents a fifo, also known as a named pipe.
 pub fn is_fifo(mode: u32) -> bool {
-    type_bits(mode) == 0o001
+    Type::from(mode) == Type::Fifo
 }
 
 /// Returns true if this mode represents a character device.
 pub fn is_char_device(mode: u32) -> bool {
-    type_bits(mode) == 0o002
+    Type::from(mode) == Type::CharDevice
 }
 
 /// Returns true if this mode represents a block device.
 pub fn is_block_device(mode: u32) -> bool {
-    type_bits(mode) == 0o006
+    Type::from(mode) == Type::BlockDevice
 }
 
 /// Returns true if this mode represents a Unix-domain socket.
 pub fn is_socket(mode: u32) -> bool {
-    type_bits(mode) == 0o014
+    Type::from(mode) == Type::Socket
 }
 
 /// Returns true if the set-user-ID bit is set
@@ -144,17 +196,7 @@ pub fn to_string(mode: u32) -> String {
     }
 
     let mut s = String::with_capacity(10);
-    s.push(match (mode >> 12) & 0o17 {
-        0o001 => 'p', // pipe/fifo
-        0o002 => 'c', // character dev
-        0o004 => 'd', // directory
-        0o006 => 'b', // block dev
-        0o010 => '-', // regular file
-        0o012 => 'l', // link
-        0o014 => 's', // socket
-        0o016 => 'w', // whiteout
-        _ => '?',     // unknown
-    });
+    s.push(Type::from(mode).short());
     let setuid = is_setuid(mode);
     let setgid = is_setgid(mode);
     let sticky = is_sticky(mode);
