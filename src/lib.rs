@@ -95,6 +95,41 @@ impl Type {
     }
 }
 
+/// Enum for specifying the context / "who" accesses in [is_allowed]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum Accessor {
+    Other,
+    Group,
+    User,
+}
+
+/// Enum for specifying the type of access in [is_allowed]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum Access {
+    /// (Beware: execute has various meanings depending on the type of file)
+    Execute,
+    Write,
+    Read,
+}
+
+/// Check whether `mode` represents an allowed (`true`) or denied (`false`) access
+pub fn is_allowed(by: Accessor, ty: Access, mode: u32) -> bool {
+    use Access::*;
+    use Accessor::*;
+    let by = match by {
+        User => 2,
+        Group => 1,
+        Other => 0,
+    };
+    let bits = (mode >> (3 * by)) & 0o7;
+    let ty = match ty {
+        Read => 2,
+        Write => 1,
+        Execute => 0,
+    };
+    bits & (1 << ty) != 0
+}
+
 /// Returns true if this mode represents a regular file.
 ///
 /// ```
@@ -183,60 +218,31 @@ pub fn to_string(mode: u32) -> String {
     // This is decoded "by hand" here so that it'll work
     // on non-Unix platforms.
 
-    fn bitset(a: u32, b: u32) -> bool {
-        a & b != 0
-    }
-
-    fn permch(mode: u32, b: u32, ch: char) -> char {
-        if bitset(mode, b) {
-            ch
-        } else {
-            '-'
-        }
-    }
-
-    let mut s = String::with_capacity(10);
-    s.push(Type::from(mode).short());
     let setuid = is_setuid(mode);
     let setgid = is_setgid(mode);
     let sticky = is_sticky(mode);
-    s.push(permch(mode, 0o400, 'r'));
-    s.push(permch(mode, 0o200, 'w'));
-    let usrx = bitset(mode, 0o100);
-    if setuid && usrx {
-        s.push('s')
-    } else if setuid && !usrx {
-        s.push('S')
-    } else if usrx {
-        s.push('x')
-    } else {
-        s.push('-')
-    }
-    // group
-    s.push(permch(mode, 0o40, 'r'));
-    s.push(permch(mode, 0o20, 'w'));
-    let grpx = bitset(mode, 0o10);
-    if setgid && grpx {
-        s.push('s')
-    } else if setgid && !grpx {
-        s.push('S')
-    } else if grpx {
-        s.push('x')
-    } else {
-        s.push('-')
-    }
-    // other
-    s.push(permch(mode, 0o4, 'r'));
-    s.push(permch(mode, 0o2, 'w'));
-    let otherx = bitset(mode, 0o1);
-    if sticky && otherx {
-        s.push('t')
-    } else if sticky && !otherx {
-        s.push('T')
-    } else if otherx {
-        s.push('x')
-    } else {
-        s.push('-')
+
+    let mut s = String::with_capacity(10);
+    s.push(Type::from(mode).short());
+    use Access::*;
+    use Accessor::*;
+    for accessor in [User, Group, Other] {
+        for access in [Read, Write, Execute] {
+            s.push(
+                match (access, accessor, is_allowed(accessor, access, mode)) {
+                    (Execute, User, true) if setuid => 's',
+                    (Execute, User, false) if setuid => 'S',
+                    (Execute, Group, true) if setgid => 's',
+                    (Execute, Group, false) if setgid => 'S',
+                    (Execute, Other, true) if sticky => 't',
+                    (Execute, Other, false) if sticky => 'T',
+                    (Execute, _, true) => 'x',
+                    (Write, _, true) => 'w',
+                    (Read, _, true) => 'r',
+                    (_, _, false) => '-',
+                },
+            );
+        }
     }
     s
 }
@@ -269,6 +275,19 @@ mod unix_tests {
 
         // I don't know how to reliably find a block device across OSes, and
         // we can't make one (without root.)
+    }
+    /// Test predicates against files likely to already exist on a Unix system.
+    #[test]
+    fn existing_file_perms() {
+        use Access::*;
+        use Accessor::*;
+        for by in [User, Group, Other] {
+            assert!(is_allowed(by, Read, file_mode("/")));
+            assert!(is_allowed(by, Execute, file_mode("/")));
+            assert!(is_allowed(by, Write, file_mode("/dev/null")));
+        }
+        assert!(!is_allowed(Other, Write, file_mode("/dev/")));
+        assert!(!is_allowed(Other, Execute, file_mode("/dev/null")));
     }
 
     #[test]
