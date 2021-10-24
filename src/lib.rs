@@ -252,4 +252,47 @@ mod unix_tests {
         let _ = UnixListener::bind(&sock_path).unwrap();
         assert!(is_socket(file_mode(sock_path)));
     }
+
+    mod to_string {
+        use super::*;
+        use std::fs::Permissions;
+        use std::os::unix::fs::PermissionsExt;
+        use std::process::Command;
+
+        fn shells(chmod_to: &str, expect_mode: &str) {
+            let tmp_dir = tempdir().unwrap();
+            // We're gonna be mucking around with setuid files, so exercise a little bit of caution
+            std::fs::set_permissions(tmp_dir.path(), Permissions::from_mode(0o700)).unwrap();
+            let f = &tmp_dir.path().join("f");
+            std::fs::write(f, &[0]).unwrap();
+            std::fs::set_permissions(f, Permissions::from_mode(0)).unwrap();
+            let chmod = Command::new("chmod").arg(chmod_to).arg(f).output().unwrap();
+            println!("chmod {:#?}", chmod);
+            assert_eq!(to_string(file_mode(f)), expect_mode);
+            // For good measure, also compare against ls
+            let ls = Command::new("ls").arg("-l").arg(f).output().unwrap();
+            println!("{:#?}", ls);
+            assert_eq!(std::str::from_utf8(&ls.stdout[0..10]), Ok(expect_mode));
+        }
+
+        #[test]
+        fn rwx() {
+            shells("a+r", "-r--r--r--");
+            shells("a+w", "--w--w--w-");
+            shells("a+x", "---x--x--x");
+        }
+
+        #[test]
+        fn extrabits() {
+            shells("+t", "---------T");
+            shells("+xt", "---x--x--t");
+            shells("+s", "---S--S---");
+            shells("+xs", "---s--s--x");
+        }
+
+        #[test]
+        fn nothing_with_left_beef() {
+            shells("u+wx,g+r", "--wxr-----");
+        }
+    }
 }
