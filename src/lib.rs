@@ -44,7 +44,15 @@ fn type_bits(mode: u32) -> u32 {
 }
 
 /// The different types of files known to this library
+///
+/// Can be constructed `From<u32>`.
+/// ```
+/// assert_eq!(unix_mode::Type::from(0o0100640), unix_mode::Type::File);
+/// ```
+///
+/// It is not recommended to match against the [Type::Unknown] variant.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[non_exhaustive]
 pub enum Type {
     File,
     Dir,
@@ -55,16 +63,14 @@ pub enum Type {
     CharDevice,
     /// Removed file in union filesystems
     Whiteout,
+    #[doc(hidden)]
     Unknown,
 }
 
-impl Type {
+impl From<u32> for Type {
     /// Parse type from mode
     ///
-    /// ```
-    /// assert_eq!(unix_mode::Type::from(0o0100640), unix_mode::Type::File);
-    /// ```
-    pub fn from(mode: u32) -> Type {
+    fn from(mode: u32) -> Type {
         use Type::*;
         match type_bits(mode) {
             0o001 => Fifo,
