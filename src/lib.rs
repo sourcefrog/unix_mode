@@ -255,49 +255,44 @@ mod unix_tests {
 
     mod to_string {
         use super::*;
-        use std::fs::File;
         use std::fs::Permissions;
-        use std::io::Write;
         use std::os::unix::fs::PermissionsExt;
         use std::process::Command;
 
-        fn shells(set: &str, expect: &str) {
+        fn shells(chmod_to: &str, expect_mode: &str) {
             let tmp_dir = tempdir().unwrap();
             // We're gonna be mucking around with setuid files, so exercise a little bit of caution
             std::fs::set_permissions(tmp_dir.path(), Permissions::from_mode(0o700)).unwrap();
             let f = &tmp_dir.path().join("f");
-            File::create(f).unwrap().write_all(&[0]).unwrap();
+            std::fs::write(f, &[0]).unwrap();
             std::fs::set_permissions(f, Permissions::from_mode(0)).unwrap();
-            let chmod = Command::new("chmod").arg(set).arg(f).output().unwrap();
-            println!("{:#?}", chmod);
-            assert_eq!(format!("-{}", expect), to_string(file_mode(f)));
+            let chmod = Command::new("chmod").arg(chmod_to).arg(f).output().unwrap();
+            println!("chmod {:#?}", chmod);
+            assert_eq!(expect_mode, to_string(file_mode(f)));
             // For good measure, also compare against ls
             let ls = Command::new("ls").arg("-l").arg(f).output().unwrap();
             println!("{:#?}", ls);
-            assert_eq!(
-                Ok(format!("-{}", expect).as_ref()),
-                std::str::from_utf8(&ls.stdout[0..10])
-            );
+            assert_eq!(Ok(expect_mode), std::str::from_utf8(&ls.stdout[0..10]));
         }
 
         #[test]
         fn rwx() {
-            shells("a+r", "r--r--r--");
-            shells("a+w", "-w--w--w-");
-            shells("a+x", "--x--x--x");
+            shells("a+r", "-r--r--r--");
+            shells("a+w", "--w--w--w-");
+            shells("a+x", "---x--x--x");
         }
 
         #[test]
         fn extrabits() {
-            shells("+t", "--------T");
-            shells("+xt", "--x--x--t");
-            shells("+s", "--S--S---");
-            shells("+xs", "--s--s--x");
+            shells("+t", "---------T");
+            shells("+xt", "---x--x--t");
+            shells("+s", "---S--S---");
+            shells("+xs", "---s--s--x");
         }
 
         #[test]
         fn nothing_with_left_beef() {
-            shells("u+wx,g+r", "-wxr-----");
+            shells("u+wx,g+r", "--wxr-----");
         }
     }
 }
