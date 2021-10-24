@@ -78,21 +78,6 @@ impl Type {
             _ => Unknown,
         }
     }
-
-    fn short(self) -> char {
-        use Type::*;
-        match self {
-            Fifo => 'p',
-            CharDevice => 'c',
-            Dir => 'd',
-            BlockDevice => 'b',
-            File => '-',
-            Symlink => 'l',
-            Socket => 's',
-            Whiteout => 'w',
-            Unknown => '?',
-        }
-    }
 }
 
 /// Enum for specifying the context / "who" accesses in [is_allowed]
@@ -217,15 +202,26 @@ pub fn is_sticky(mode: u32) -> bool {
 pub fn to_string(mode: u32) -> String {
     // This is decoded "by hand" here so that it'll work
     // on non-Unix platforms.
+    use Access::*;
+    use Accessor::*;
+    use Type::*;
 
     let setuid = is_setuid(mode);
     let setgid = is_setgid(mode);
     let sticky = is_sticky(mode);
 
     let mut s = String::with_capacity(10);
-    s.push(Type::from(mode).short());
-    use Access::*;
-    use Accessor::*;
+    s.push(match Type::from(mode) {
+        Fifo => 'p',
+        CharDevice => 'c',
+        Dir => 'd',
+        BlockDevice => 'b',
+        File => '-',
+        Symlink => 'l',
+        Socket => 's',
+        Whiteout => 'w',
+        Unknown => '?',
+    });
     for accessor in [User, Group, Other] {
         for access in [Read, Write, Execute] {
             s.push(
