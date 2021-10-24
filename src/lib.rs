@@ -268,11 +268,11 @@ mod unix_tests {
             std::fs::set_permissions(f, Permissions::from_mode(0)).unwrap();
             let chmod = Command::new("chmod").arg(chmod_to).arg(f).output().unwrap();
             println!("chmod {:#?}", chmod);
-            assert_eq!(expect_mode, to_string(file_mode(f)));
+            assert_eq!(to_string(file_mode(f)), expect_mode);
             // For good measure, also compare against ls
             let ls = Command::new("ls").arg("-l").arg(f).output().unwrap();
             println!("{:#?}", ls);
-            assert_eq!(Ok(expect_mode), std::str::from_utf8(&ls.stdout[0..10]));
+            assert_eq!(std::str::from_utf8(&ls.stdout[0..10]), Ok(expect_mode));
         }
 
         #[test]
