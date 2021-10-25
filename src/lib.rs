@@ -49,8 +49,6 @@ fn type_bits(mode: u32) -> u32 {
 /// ```
 /// assert_eq!(unix_mode::Type::from(0o0100640), unix_mode::Type::File);
 /// ```
-///
-/// It is not recommended to match against the [Type::Unknown] variant.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 #[non_exhaustive]
 pub enum Type {
@@ -63,7 +61,9 @@ pub enum Type {
     CharDevice,
     /// Removed file in union filesystems
     Whiteout,
-    #[doc(hidden)]
+    /// File type not recognized by this version of this library
+    ///
+    /// More types might be added in the future, so the semantics of this variant may change.
     Unknown,
 }
 
@@ -278,7 +278,8 @@ mod unix_tests {
         // I don't know how to reliably find a block device across OSes, and
         // we can't make one (without root.)
     }
-    /// Test predicates against files likely to already exist on a Unix system.
+
+    /// Test [is_allowed] against files likely to already exist on a Unix system.
     #[test]
     fn existing_file_perms() {
         use Access::*;
