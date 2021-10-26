@@ -33,10 +33,31 @@
 //! interpret the bits.
 //!
 //! For example, this can be used with the return value from
-//! `std::os::unix::fs::MetadataExt::mode()`.
+//! [std::os::unix::fs::MetadataExt::mode].
 //!
-//! The names of the predicate functions match `std::fs::FileType` and
-//! `std::os::unix::fs::FileTypeExt`.
+//! The names of the predicate functions match [std::fs::FileType] and
+//! [std::os::unix::fs::FileTypeExt].
+//!
+//! # Changelog
+//!
+//! ## 0.1.3
+//!
+//! * Add [Type] enum for matching the file type.
+//! * Add [Access], and [Accessor] enums for testing permissions.
+//! * More tests.
+//! * Move changelog into Rustdoc.
+//!
+//! ## 0.1.2 2021-08-1
+//!
+//! * Add [is_setuid], [is_setgid], [is_sticky].
+//!
+//! ## 0.1.1
+//!
+//! * Fix tests on Windows.
+//!
+//! ## 0.1.0
+//!
+//! * Initial release.
 
 /// Return just the bits representing the type of file.
 fn type_bits(mode: u32) -> u32 {
