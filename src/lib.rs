@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#![warn(missing_docs)]
+
 //! Manipulate Unix file mode bits.
 //!
 //! Every filesystem entry (or inode) on Unix has a bit field of
@@ -27,7 +29,8 @@
 //! ```
 //!
 //! The encoding is fairly standard across unices, and occurs in some file
-//! formats and network protocols that might be seen on non-Unix platforms.
+//! formats and network protocols that might be seen on non-Unix platforms, including that of
+//! `rsync`.
 //!
 //! This library isn't Unix-specific and doesn't depend on the underlying OS to
 //! interpret the bits.
@@ -47,7 +50,7 @@
 //! * More tests.
 //! * Move changelog into Rustdoc.
 //!
-//! ## 0.1.2 2021-08-1
+//! ## 0.1.2
 //!
 //! * Add [is_setuid], [is_setgid], [is_sticky].
 //!
@@ -73,14 +76,21 @@ fn type_bits(mode: u32) -> u32 {
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 #[non_exhaustive]
 pub enum Type {
+    /// A plain file.
     File,
+    /// A directory.
     Dir,
+    /// A symbolic link.
     Symlink,
+    /// A Unix-domain socket.
     Socket,
+    /// A named pipe / FIFO.
     Fifo,
+    /// A block device, such as a disk.
     BlockDevice,
+    /// A character device, such as a `/dev/null`.
     CharDevice,
-    /// Removed file in union filesystems
+    /// A removed file in union filesystems.
     Whiteout,
     /// File type not recognized by this version of this library
     ///
@@ -110,17 +120,25 @@ impl From<u32> for Type {
 /// Enum for specifying the context / "who" accesses in [is_allowed]
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Accessor {
+    /// Access by anyone other than the user or group.
     Other,
+    /// Access by the group of the file.
     Group,
+    /// Access by the owner of the file.
     User,
 }
 
 /// Enum for specifying the type of access in [is_allowed]
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Access {
-    /// (Beware: execute has various meanings depending on the type of file)
+    /// Permission to "execute", broadly.
+    ///
+    /// For plain files, this does mean permission to execute. For directories, this grants
+    /// permission to open files within the directory whose name is known.
     Execute,
+    /// Permission to write the file.
     Write,
+    /// Permission to read the file, or to read the names of files in a directory.
     Read,
 }
 
