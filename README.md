@@ -8,7 +8,13 @@ This library provides functions to decode and print Unix mode bits /
 permissions, even on non-Unix platforms.
 
 On Unix, decoding is supported by `std::os::unix::fs` in the standard library,
-but this crate adds a function to print them in the format used by `ls -l`.
+but this crate adds a function to render them in the format used by `ls -l`,
+and to understand the file type and permissions.
+
+    assert_eq!(unix_mode::to_string(0o0040755), "drwxr-xr-x");
+    assert_eq!(unix_mode::to_string(0o0100640), "-rw-r-----");
+    
+    assert_eq!(unix_mode::is_symlink(0o0040755), false);
 
 For API documentation see <https://docs.rs/unix_mode>.
 
