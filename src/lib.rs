@@ -201,6 +201,11 @@ pub fn is_char_device(mode: u32) -> bool {
 }
 
 /// Returns true if this mode represents a block device.
+///
+/// ```
+/// assert!(!unix_mode::is_block_device(0o0020600)); // "crw-------"
+/// assert!(unix_mode::is_block_device(0o0060600)); // "brw-------"
+/// ```
 pub fn is_block_device(mode: u32) -> bool {
     Type::from(mode) == Type::BlockDevice
 }
