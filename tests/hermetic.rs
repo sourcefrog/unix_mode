@@ -18,11 +18,18 @@ use unix_mode::Type;
 
 #[test]
 fn permissions_to_type() {
-    let cases = [(0o0010000, Type::Fifo), (0o0100666, Type::File)];
+    let cases = [
+        (0o0010000, Type::Fifo),
+        (0o0100666, Type::File),
+        (0o0140600, Type::Socket),
+        (0o0020600, Type::CharDevice),
+    ];
     for (mode, expected_type) in cases {
         let t = Type::from(mode);
         assert_eq!(t, expected_type);
         assert_eq!(unix_mode::is_fifo(mode), t == Type::Fifo);
         assert_eq!(unix_mode::is_file(mode), t == Type::File);
+        assert_eq!(unix_mode::is_socket(mode), t == Type::Socket);
+        assert_eq!(unix_mode::is_char_device(mode), t == Type::CharDevice);
     }
 }
