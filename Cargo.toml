@@ -3,7 +3,7 @@ name = "unix_mode"
 version = "0.1.4-pre"
 authors = ["Martin Pool <mbp@sourcefrog.net>"]
 edition = "2018"
-description = "Decode Unix file mode bits (even on non-Unix platforms)"
+description = "Decode, interpret, and display Unix file mode bits (even on non-Unix platforms)"
 license = "Apache-2.0"
 repository = "https://github.com/sourcefrog/unix_mode"
 
