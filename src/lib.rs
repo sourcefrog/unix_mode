@@ -43,6 +43,10 @@
 //!
 //! # Changelog
 //!
+//! ## 0.1.4-pre
+//!
+//! * Optional feature `serde` allows serializing [Type], [Access], and [Accessor].
+//!
 //! ## 0.1.3
 //!
 //! * Add [Type] enum for matching the file type.
@@ -74,6 +78,7 @@ fn type_bits(mode: u32) -> u32 {
 /// assert_eq!(unix_mode::Type::from(0o0100640), unix_mode::Type::File);
 /// ```
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[non_exhaustive]
 pub enum Type {
     /// A plain file.
@@ -119,6 +124,7 @@ impl From<u32> for Type {
 
 /// Enum for specifying the context / "who" accesses in [is_allowed]
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Accessor {
     /// Access by anyone other than the user or group.
     Other,
@@ -130,6 +136,7 @@ pub enum Accessor {
 
 /// Enum for specifying the type of access in [is_allowed]
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Access {
     /// Permission to "execute", broadly.
     ///
