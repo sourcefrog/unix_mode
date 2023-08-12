@@ -1,6 +1,6 @@
 [package]
 name = "unix_mode"
-version = "0.1.4-pre"
+version = "0.1.4"
 authors = ["Martin Pool <mbp@sourcefrog.net>"]
 edition = "2021"
 description = "Decode, interpret, and display Unix file mode bits (even on non-Unix platforms)"
