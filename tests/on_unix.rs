@@ -93,8 +93,8 @@ mod to_string {
         // We're gonna be mucking around with setuid files, so exercise a little bit of caution
         std::fs::set_permissions(tmp_dir.path(), Permissions::from_mode(0o700)).unwrap();
         let f = &tmp_dir.path().join("f");
-        std::fs::write(f, &[0]).unwrap();
-        std::fs::set_permissions(f, Permissions::from_mode(0)).unwrap();
+        std::fs::write(f, [0]).unwrap();
+        std::fs::set_permissions(f, Permissions::from_mode(0o0)).unwrap();
         let chmod = Command::new("chmod").arg(chmod_to).arg(f).output().unwrap();
         println!("chmod {:#?}", chmod);
         assert_eq!(to_string(file_mode(f)), expect_mode);
