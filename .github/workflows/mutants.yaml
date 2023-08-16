@@ -18,7 +18,6 @@ jobs:
         run: cargo mutants -- --all-features
       - name: Archive results
         uses: actions/upload-artifact@v3
-        if: failure()
         with:
           name: mutation-report
           path: mutants.out
