@@ -11,7 +11,9 @@ jobs:
         with:
           toolchain: stable
       - name: Install cargo-mutants
-        run: cargo install cargo-mutants
+        uses: baptiste0928/cargo-install@v2.1.0
+        with:
+          crate: cargo-mutants
       - name: Run mutant tests
         run: cargo mutants -- --all-features
       - name: Archive results
